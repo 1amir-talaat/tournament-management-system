@@ -1,0 +1,23 @@
+{
+  "name": "tournament-management-system",
+  "version": "1.0.0",
+  "description": "The Tournament Management System (TMS) repository is a centralized location that houses all the code, documentation, and resources related to the development and implementation of the software solution. It serves as a collaborative platform for team members to access, contribute to, and track the progress of the project. The repository includes source code files, design documents, test plans, program files, error reports, optimization logs, and evaluation documentation, providing a comprehensive record of the development process. Additionally, the repository enables version control, ensuring that changes are tracked, reviewed, and documented effectively throughout the project lifecycle.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.2",
+    "nodemon": "^3.1.0",
+    "sequelize": "^6.37.1"
+  }
+}
