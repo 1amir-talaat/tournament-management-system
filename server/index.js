@@ -2,13 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import router from "./routes/routes.js";
+import * as model from "./models/models.js";
 import sequelize from "./database/connection.js";
-import User from "./models/user.js";
-import Team from "./models/team.js";
-import Role from "./models/role.js";
-import Event from "./models/event.js";
-import EventParticipant from "./models/eventParticipant.js";
-import Score from "./models/score.js";
 
 dotenv.config();
 
@@ -24,6 +19,7 @@ async function initializeDatabase() {
     console.error("Unable to connect to the database:", error);
   }
 }
+
 
 initializeDatabase();
 

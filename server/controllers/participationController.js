@@ -21,14 +21,16 @@ class ParticipationController {
     }
 
     try {
-      const user = await User.findByPk(userId);
       const event = await Event.findByPk(eventId);
 
-      if (!user || !event) {
-        return res.status(404).json({ error: "User or event not found" });
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
       }
 
       if (teamId) {
+        if (event.type != "Team") {
+          return res.status(400).json({ error: "Event type is Individual" });
+        }
         const team = await Team.findByPk(teamId);
         if (!team) {
           return res.status(404).json({ error: "Team not found" });
@@ -45,6 +47,16 @@ class ParticipationController {
         const newParticipation = await Participation.create({ userId, eventId, teamId });
         res.status(201).json({ message: "User registered for event as part of team", participation: newParticipation });
       } else {
+        if (event.type != "Individual") {
+          return res.status(400).json({ error: "Event type is Team" });
+        }
+
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+          return res.status(404).json({ error: "user not found" });
+        }
+
         const existingParticipation = await Participation.findOne({
           where: { userId, eventId },
         });

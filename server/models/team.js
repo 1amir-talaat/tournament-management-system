@@ -1,15 +1,22 @@
-import { DataTypes } from "sequelize";
+import Sequelize from "sequelize";
 import sequelize from "../database/connection.js";
 
-const Team = sequelize.define("Team", {
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
+const Team = sequelize.define(
+  "Team",
+  {
+    id: {
+      type: Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    teamName: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
   },
-  is_team: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-});
+  {
+    tableName: "Team",
+  }
+);
 
 export default Team;

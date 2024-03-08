@@ -1,8 +1,8 @@
 import Sequelize from "sequelize";
 import sequelize from "../database/connection.js";
 
-const User = sequelize.define(
-  "User",
+const Admin = sequelize.define(
+  "Admin",
   {
     id: {
       type: Sequelize.INTEGER,
@@ -13,31 +13,23 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    email: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-    },
     password: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    inTeam: {
-      type: Sequelize.BOOLEAN,
+    email: {
+      type: Sequelize.STRING,
       allowNull: false,
     },
-    currentTeamId: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-      references: {
-        model: "Team",
-        key: "id",
-      },
+    role: {
+      type: Sequelize.ENUM("admin", "superadmin"),
+      allowNull: false,
+      defaultValue: "admin",
     },
   },
   {
-    tableName: "User",
+    tableName: "Admin",
   }
 );
 
-export default User;
+export default Admin;
