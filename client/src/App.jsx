@@ -6,13 +6,13 @@ import SideBarLayout from "./components/SideBarLayout";
 function App() {
   return (
     <>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" Component={Login} />
-            <Route path="/register" Component={Register} />
-            <Route path="/sidebar" Component={SideBarLayout} />
-          </Routes>
-        </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" Component={Login} />
+          <Route path="/register" Component={Register} />
+          <Route path="/sidebar/*" Component={SideBarLayout} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }

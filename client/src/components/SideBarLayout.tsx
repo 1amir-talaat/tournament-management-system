@@ -29,6 +29,7 @@ import {
 } from 'react-icons/fi';
 import { IoPersonCircleSharp } from 'react-icons/io5';
 import useAuth from '../hook/useAuth';
+import {Routes, Route, useNavigate } from 'react-router-dom'; 
 
 const LinkItems = [
   { name: 'Home', icon: FiHome },
@@ -38,7 +39,7 @@ const LinkItems = [
   { name: 'Settings', icon: FiSettings },
 ];
 
-const SidebarContent = ({ onClose, handleContentChange, ...rest }) => {
+const SidebarContent = ({ onClose, handleContentChange,...rest }) => {
   return (
     <Box
       transition="3s ease"
@@ -103,7 +104,7 @@ const NavItem = ({ icon, children, onClick, ...rest }) => {
   );
 };
 
-const MobileNav = ({ onOpen, ...rest }) => {
+const MobileNav = ({ onOpen, user, ...rest }) => {
   return (
     <Flex
       ml={{ base: 0, md: 60 }}
@@ -144,9 +145,9 @@ const MobileNav = ({ onOpen, ...rest }) => {
                   alignItems="flex-start"
                   spacing="1px"
                 >
-                  <Text fontSize="sm">Justina Clark</Text>
+                  <Text fontSize="sm">{user && user.name}</Text>
                   <Text fontSize="xs" color="gray.600">
-                    Admin
+                    {user && user.role}
                   </Text>
                 </VStack>
                 <Box display={{ base: 'none', md: 'flex' }}>
@@ -174,39 +175,41 @@ const MobileNav = ({ onOpen, ...rest }) => {
 const SideBarLayout = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentContent, setCurrentContent] = useState('Home');
-  const { user } = useAuth();
-
+  const { user } = useAuth()
+  const navigation = useNavigate()
+  
   const handleContentChange = (content) => {
-    setCurrentContent(content);
+    navigation(content)
     onClose();
   };
 
   return (
-    <Box minH="100vh" w={'100vw'} bg={useColorModeValue('gray.100', 'gray.900')}>
-      <SidebarContent handleContentChange={handleContentChange} onClose={() => onClose} display={{ base: 'none', md: 'block' }} />
-      <Drawer
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
-        size="full"
-      >
-        <DrawerContent>
-          <SidebarContent handleContentChange={handleContentChange} onClose={onClose} />
-        </DrawerContent>
-      </Drawer>
-      {/* mobilenav */}
-      <MobileNav onOpen={onOpen}  />
-      <Box ml={{ base: 0, md: 60 }} p="4">
-        {/* Content */}
-        {currentContent === 'Home' && <div>Home Content</div>}
-        {currentContent === 'Trending' && <div>Trending Content</div>}
-        {currentContent === 'Explore' && <div>Explore Content</div>}
-        {currentContent === 'Favourites' && <div>Favourites Content</div>}
-        {currentContent === 'Settings' && <div>Settings Content</div>}
+      <Box minH="100vh" w={'100vw'} bg={useColorModeValue('gray.100', 'gray.900')}>
+        <SidebarContent handleContentChange={handleContentChange} onClose={() => onClose} display={{ base: 'none', md: 'block' }} />
+        <Drawer
+          isOpen={isOpen}
+          placement="left"
+          onClose={onClose}
+          returnFocusOnClose={false}
+          onOverlayClick={onClose}
+          size="full"
+        >
+          <DrawerContent>
+            <SidebarContent handleContentChange={handleContentChange} onClose={onClose} />
+          </DrawerContent>
+        </Drawer>
+        {/* mobilenav */}
+        <MobileNav onOpen={onOpen} user={user} />
+        <Box ml={{ base: 0, md: 60 }} p="4">
+          <Routes> 
+            <Route path="/Home" element={<div>Home Content</div>} />
+            <Route path="/trending" element={<div>Trending Content</div>} />
+            <Route path="/explore" element={<div>Explore Content</div>} />
+            <Route path="/favourites" element={<div>Favourites Content</div>} />
+            <Route path="/settings" element={<div>Settings Content</div>} />
+          </Routes>
+        </Box>
       </Box>
-    </Box>
   );
 };
 
