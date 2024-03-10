@@ -92,12 +92,13 @@ class UserController {
 
       if (!user) {
         user = await Admin.findOne({ where: { email } });
+
+        if (!user) {
+          return res.status(401).json({ error: "User not found" });
+        }
+
         isAdmin = true;
         role = user.role;
-      }
-
-      if (!user) {
-        return res.status(401).json({ error: "User not found" });
       }
 
       const matchedPassword = await bcrypt.compare(password, user.password);
@@ -132,32 +133,60 @@ class UserController {
     }
   };
 
-  static deleteUser = async (req, res) => {
+  static editUser = async (req, res) => {
     const { id } = req.params;
+    const { name, email } = req.body;
 
     if (!req.isAdmin) {
       return res.status(403).json({ error: "Unauthorized - Admin access required" });
     }
 
     try {
-      const user = await User.findByPk(id, { include: Team });
+      let user = await User.findByPk(id);
+
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
 
-      if (user.team) {
-        await user.team.destroy();
-      }
+      if (name) user.name = name;
+      if (email) user.email = email;
 
-      await user.destroy();
+      await user.save();
 
-      res.status(200).json({ msg: "User and associated team deleted successfully" });
+      res.status(200).json({ message: "User updated successfully" });
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error("Error updating user:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
 
+  static deleteUsers = async (req, res) => {
+    const { ids } = req.body;
+
+    if (!req.isAdmin) {
+      return res.status(403).json({ error: "Unauthorized - Admin access required" });
+    }
+
+    try {
+      for (const id of ids) {
+        const user = await User.findByPk(id, { include: Team });
+        if (!user) {
+          return res.status(404).json({ error: `User with ID ${id} not found` });
+        }
+
+        if (user.team) {
+          await user.team.destroy();
+        }
+
+        await user.destroy();
+      }
+
+      res.status(200).json({ msg: "Users and associated teams deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting users:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
   static createAdmin = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -192,7 +221,7 @@ class UserController {
           expiresIn: "30d",
         }
       );
-      
+
       res.status(201).json({
         token,
         msg: "Admin created successfully",

@@ -1,7 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import SideBarLayout from "./components/SideBarLayout";
+import Dashbord from "./components/Dashbord";
+import DataTableDemo from "./components/Table";
+import "./globals.css";
+import Error404 from "./components/Error404";
 
 function App() {
   return (
@@ -9,8 +12,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" Component={Login} />
+          <Route path="*" Component={Error404} />
+          <Route path="/table" Component={DataTableDemo} />
           <Route path="/register" Component={Register} />
-          <Route path="/sidebar/*" Component={SideBarLayout} />
+          <Route path="/dashbord/*" Component={Dashbord} />
         </Routes>
       </BrowserRouter>
     </>

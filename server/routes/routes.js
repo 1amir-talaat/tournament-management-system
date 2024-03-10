@@ -12,7 +12,8 @@ router.get("/user/all", authenticateMiddleware, UserController.getAllUsers);
 router.get("/user/:id", authenticateMiddleware, UserController.getUserById);
 router.post("/user/register", UserController.register);
 router.post("/user/login", UserController.login);
-router.delete("/user/:id", authenticateMiddleware, UserController.deleteUser);
+router.put("/user/:id", authenticateMiddleware, UserController.editUser); // Define the edit user route here
+router.delete("/user", authenticateMiddleware, UserController.deleteUsers);
 router.post("/add/admin", authenticateMiddleware, UserController.createAdmin);
 
 // Team routes
@@ -29,4 +30,5 @@ router.get("/participation/count", authenticateMiddleware, ParticipationControll
 // Event routes
 router.post("/event/create", authenticateMiddleware, EventController.createEvent);
 router.get("/event/all", EventController.getAllEvents);
+
 export default router;
