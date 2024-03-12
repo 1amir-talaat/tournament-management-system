@@ -1,7 +1,6 @@
 import express from "express";
 import UserController from "../controllers/UserController.js";
 import authenticateMiddleware from "../middleware/verifyToken.js";
-import TeamController from "../controllers/TeamController.js";
 import ParticipationController from "../controllers/participationController.js";
 import EventController from "../controllers/EventController.js";
 
@@ -12,15 +11,15 @@ router.get("/user/all", authenticateMiddleware, UserController.getAllUsers);
 router.get("/user/:id", authenticateMiddleware, UserController.getUserById);
 router.post("/user/register", UserController.register);
 router.post("/user/login", UserController.login);
-router.put("/user/:id", authenticateMiddleware, UserController.editUser); // Define the edit user route here
+router.put("/user/:id", authenticateMiddleware, UserController.editUser);
 router.delete("/user", authenticateMiddleware, UserController.deleteUsers);
-router.post("/add/admin", authenticateMiddleware, UserController.createAdmin);
 
-// Team routes
-router.post("/team/create", authenticateMiddleware, TeamController.createTeam);
-router.get("/team/", authenticateMiddleware, TeamController.getAllTeams);
-router.delete("/team/:teamId", authenticateMiddleware, TeamController.deleteTeam);
-router.get("/team/user", authenticateMiddleware, TeamController.getTeamByUserId);
+// Admin routes
+router.post("/admin", authenticateMiddleware, UserController.createAdmin);
+router.get("/admin/all", authenticateMiddleware, UserController.getAllAdmins);
+router.put("/admin/:id", authenticateMiddleware, UserController.editAdmin);
+router.delete("/admin", authenticateMiddleware, UserController.deleteAdmins);
+router.get("/admin/:id", authenticateMiddleware, UserController.getAdminById);
 
 // Participation routes
 router.post("/participation/register", authenticateMiddleware, ParticipationController.participateInEvent);

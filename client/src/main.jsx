@@ -6,11 +6,11 @@ import { AuthProvider } from "./context/AuthContext";
 
 const rootElement = document.getElementById("root");
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <ChakraProvider>
-      <AuthProvider>
+  <AuthProvider>
+    <React.StrictMode>
+      <ChakraProvider>
         <App />
-      </AuthProvider>
-    </ChakraProvider>
-  </React.StrictMode>
+      </ChakraProvider>
+    </React.StrictMode>
+  </AuthProvider>
 );

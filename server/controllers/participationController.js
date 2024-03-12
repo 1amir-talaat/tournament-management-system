@@ -1,10 +1,10 @@
-import { Participation, Team, Event, User } from "../models/models.js";
+import { Participation, Event, User } from "../models/models.js";
 
 class ParticipationController {
   static participateInEvent = async (req, res) => {
-    const { userId, eventId, teamId } = req.body;
+    const { userId, eventId } = req.body;
 
-    if (!((userId || teamId) && eventId)) {
+    if (!((userId) && eventId)) {
       return res.status(401).json({ error: "Missing input fields" });
     }
 

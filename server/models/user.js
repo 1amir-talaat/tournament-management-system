@@ -22,22 +22,16 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    inTeam: {
-      type: Sequelize.BOOLEAN,
+    type: {
+      type: Sequelize.ENUM("individual", "team"),
       allowNull: false,
-    },
-    currentTeamId: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-      references: {
-        model: "Team",
-        key: "id",
-      },
+      defaultValue: "individual",
     },
   },
   {
     tableName: "User",
   }
 );
+
 
 export default User;

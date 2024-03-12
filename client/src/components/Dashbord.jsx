@@ -17,26 +17,28 @@ import {
   MenuItem,
   MenuList,
 } from "@chakra-ui/react";
-import { FiTrendingUp, FiCompass, FiStar, FiSettings, FiMenu, FiChevronDown } from "react-icons/fi";
 import { IoPersonCircleSharp } from "react-icons/io5";
 import useAuth from "../hook/useAuth";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+
 import { FaRegUser } from "react-icons/fa";
-import DataTableDemo from "./Table";
+import { RiAdminLine } from "react-icons/ri";
+
+import UserTable from "./Tables/UserTable";
+import AdminTable from "./Tables/AdminTable";
+
+import { IoMenu } from "react-icons/io5";
+import { FaAngleDown } from "react-icons/fa";
 
 const SidebarContent = ({ onClose, handleContentChange, userRole, ...rest }) => {
   const sidebarItems = [
     { name: "Users", icon: <FaRegUser size={21.5} /> },
-    { name: "Trending", icon: FiTrendingUp },
-    { name: "Explore", icon: FiCompass },
-    { name: "Favourites", icon: FiStar },
-    { name: "Settings", icon: FiSettings },
+    { name: "Admins", icon: <RiAdminLine size={21.5} /> },
   ];
 
   const userRoleSpecificItems = {
-    student: ["Users", "Trending", "Explore"],
-    admin: ["Users", "Trending", "Explore", "Settings"],
-    superadmin: ["Users", "Trending", "Explore", "Favourites", "Settings"],
+    admin: ["Users"],
+    superadmin: ["Users", "Admins"],
   };
 
   const filteredItems = userRoleSpecificItems[userRole] || [];
@@ -72,6 +74,7 @@ const SidebarContent = ({ onClose, handleContentChange, userRole, ...rest }) => 
 };
 
 const NavItem = ({ icon, children, onClick, ...rest }) => {
+  const location = useLocation();
   return (
     <Box as="a" style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
       <Flex
@@ -79,12 +82,10 @@ const NavItem = ({ icon, children, onClick, ...rest }) => {
         p="4"
         mx="4"
         borderRadius="lg"
+        bg={location.pathname.split("/").pop() === children ? "cyan.400" : "transparent"}
+        color={location.pathname.split("/").pop() === children ? "white" : "gray.600"}
         role="group"
         cursor="pointer"
-        _hover={{
-          bg: "cyan.400",
-          color: "white",
-        }}
         onClick={onClick}
         {...rest}
       >
@@ -96,6 +97,7 @@ const NavItem = ({ icon, children, onClick, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, user, ...rest }) => {
+  const { logout } = useAuth();
   return (
     <Flex
       ml={{ base: 0, md: 60 }}
@@ -108,7 +110,7 @@ const MobileNav = ({ onOpen, user, ...rest }) => {
       justifyContent={{ base: "space-between", md: "flex-end" }}
       {...rest}
     >
-      <IconButton display={{ base: "flex", md: "none" }} onClick={onOpen} variant="outline" aria-label="open menu" icon={<FiMenu />} />
+      <IconButton display={{ base: "flex", md: "none" }} onClick={onOpen} variant="outline" aria-label="open menu" icon={<IoMenu />} />
 
       <Text display={{ base: "flex", md: "none" }} fontSize="2xl" fontFamily="monospace" fontWeight="bold">
         Torment
@@ -127,16 +129,12 @@ const MobileNav = ({ onOpen, user, ...rest }) => {
                   </Text>
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
-                  <FiChevronDown />
+                  <FaAngleDown />
                 </Box>
               </HStack>
             </MenuButton>
             <MenuList bg={useColorModeValue("white", "gray.900")} borderColor={useColorModeValue("gray.200", "gray.700")}>
-              <MenuItem>Profile</MenuItem>
-              <MenuItem>Settings</MenuItem>
-              <MenuItem>Billing</MenuItem>
-              <MenuDivider />
-              <MenuItem>Sign out</MenuItem>
+              <MenuItem onClick={() => logout()}>Sign out</MenuItem>
             </MenuList>
           </Menu>
         </Flex>
@@ -148,12 +146,17 @@ const MobileNav = ({ onOpen, user, ...rest }) => {
 const Dashbord = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useAuth();
-  const navigation = useNavigate();
+  const navigate = useNavigate();
 
   const handleContentChange = (content) => {
-    navigation(content);
+    navigate(content);
     onClose();
   };
+
+  let location = useLocation();
+  if (location.pathname === "/dashbord/" || location.pathname === "/dashbord") {
+    navigate("/dashbord/Users");
+  }
 
   return (
     <Box minH="100vh" w={"100vw"} bg={useColorModeValue("white", "gray.900")}>
@@ -172,8 +175,8 @@ const Dashbord = () => {
       <MobileNav onOpen={onOpen} user={user} />
       <Box ml={{ base: 0, md: 60 }} p="4">
         <Routes>
-          <Route path="/Users" element={<DataTableDemo />} />
-          <Route path="/trending" element={<div>Trending Content</div>} />
+          <Route path="/Users" element={<UserTable />} />
+          <Route path="/Admins" element={<AdminTable />} />
           <Route path="/explore" element={<div>Explore Content</div>} />
           <Route path="/favourites" element={<div>Favourites Content</div>} />
           <Route path="/settings" element={<div>Settings Content</div>} />

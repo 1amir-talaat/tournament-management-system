@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { User, Team, Admin } from "../models/models.js";
+import { User, Admin } from "../models/models.js";
 
 class UserController {
   static getAllUsers = async (req, res) => {
@@ -43,7 +43,7 @@ class UserController {
     }
 
     try {
-      const newUser = await User.create({ name, email, password: await bcrypt.hash(password, 10), inTeam: false, currentTeamId: null });
+      const newUser = await User.create({ name, email, password: await bcrypt.hash(password, 10)});
 
       const token = jwt.sign(
         {
@@ -52,8 +52,6 @@ class UserController {
           name: newUser.name,
           isAdmin: false,
           role: "student",
-          inTeam: newUser.inTeam,
-          currentTeamId: newUser.currentTeamId,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -114,8 +112,6 @@ class UserController {
           name: user.name,
           isAdmin,
           role,
-          inTeam: user.inTeam,
-          currentTeamId: user.currentTeamId,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -169,24 +165,35 @@ class UserController {
 
     try {
       for (const id of ids) {
-        const user = await User.findByPk(id, { include: Team });
+        const user = await User.findByPk(id);
         if (!user) {
           return res.status(404).json({ error: `User with ID ${id} not found` });
-        }
-
-        if (user.team) {
-          await user.team.destroy();
         }
 
         await user.destroy();
       }
 
-      res.status(200).json({ msg: "Users and associated teams deleted successfully" });
+      res.status(200).json({ msg: "Users deleted successfully" });
     } catch (error) {
       console.error("Error deleting users:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
+
+  static getAllAdmins = async (req, res) => {
+    if (!req.isAdmin && req.role != "superadmin") {
+      return res.status(403).json({ error: "Unauthorized - Super Admin access required" });
+    }
+
+    try {
+      const admins = await Admin.findAll();
+      res.json(admins);
+    } catch (error) {
+      console.error("Error fetching admins:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
   static createAdmin = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -213,8 +220,6 @@ class UserController {
           name: newAdmin.name,
           isAdmin: true,
           role: newAdmin.role,
-          inTeam: newAdmin.inTeam,
-          currentTeamId: newAdmin.currentTeamId,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -228,6 +233,71 @@ class UserController {
       });
     } catch (error) {
       console.error("Error creating admin user:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static editAdmin = async (req, res) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ error: "Unauthorized - Admin access required" });
+    }
+    const { id } = req.params;
+    const { name, email, password, role } = req.body;
+
+    try {
+      const admin = await Admin.findByPk(id);
+      if (!admin) {
+        return res.status(404).json({ error: "Admin not found" });
+      }
+
+      admin.name = name;
+      admin.email = email;
+
+      await admin.save();
+
+      res.json(admin);
+    } catch (error) {
+      console.error("Error editing admin:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static deleteAdmins = async (req, res) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ error: "Unauthorized - Admin access required" });
+    }
+
+    const { ids } = req.body;
+
+    try {
+      for (const id of ids) {
+        const admin = await Admin.findByPk(id);
+        if (!admin) {
+          return res.status(404).json({ error: `Admin with ID ${id} not found` });
+        }
+
+        await admin.destroy();
+      }
+
+      res.status(200).json({ msg: "Admins deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting admins:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static getAdminById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const admin = await Admin.findByPk(id);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      res.json(admin);
+    } catch (error) {
+      console.error("Error fetching admin:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };

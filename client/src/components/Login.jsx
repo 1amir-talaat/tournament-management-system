@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Flex,
   Box,
@@ -18,7 +18,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import useAuth from "../hook/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 
 export default function Login() {
@@ -28,9 +28,21 @@ export default function Login() {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
-  const { login, user, loading } = useAuth();
+  const { login, user, isLogin, loading } = useAuth();
 
-  console.log(user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      if (user.isAdmin) {
+        navigate("/dashbord");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [navigate, user]);
+
+
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -50,12 +62,15 @@ export default function Login() {
     try {
       const response = await login(email, password, setError);
       console.log("Login successful:", response);
-      // Handle successful login, such as redirecting to another page
     } catch (error) {
       console.error("Login failed:", error.message);
       // Handle login error, display error message to user
     }
   };
+
+  if (isLogin) {
+    return "";
+  }
 
   return (
     <Flex minH={"100vh"} w={"100vw"} align={"center"} justify={"center"} bg={useColorModeValue("gray.50", "gray.800")}>

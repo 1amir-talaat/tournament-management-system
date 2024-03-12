@@ -1,23 +1,14 @@
 import Sequelize from "sequelize";
 import sequelize from "../database/connection.js";
-import User from "./user.js";
 import Event from "./event.js";
 
-const Participation = sequelize.define(
-  "Participation",
+const Questions = sequelize.define(
+  "questions",
   {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-    },
-    userId: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
     },
     eventId: {
       type: Sequelize.INTEGER,
@@ -27,13 +18,18 @@ const Participation = sequelize.define(
         key: "id",
       },
     },
-    points: {
+    text: {
       type: Sequelize.INTEGER,
+      allowNull: false,
+    },
+    answer: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
     },
   },
   {
-    tableName: "Participation",
+    tableName: "questions",
   }
 );
 
-export default Participation;
+export default Questions;

@@ -3,7 +3,7 @@ import * as React from "react";
 import { formatDistanceToNow } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
 
-import useAuth from "../hook/useAuth.jsx";
+import useAuth from "../../hook/useAuth.jsx";
 
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 
@@ -19,6 +19,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+import { z } from "zod";
 
 import {
   AlertDialog,
@@ -32,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const getColumn = ({ onEdit, onDelete }) => [
+const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
   {
     id: "select",
     header: ({ table }) => (
@@ -64,11 +67,6 @@ const getColumn = ({ onEdit, onDelete }) => [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "inTeam",
-    header: () => <div>In Team</div>,
-    cell: ({ row }) => <div style={{ width: "20px" }}>{row.getValue("inTeam") ? "Yes" : "No"}</div>,
-  },
-  {
     id: "createdAt",
     header: () => <div className="text-right">Created at</div>,
     cell: ({ row }) => {
@@ -86,6 +84,23 @@ const getColumn = ({ onEdit, onDelete }) => [
       return (
         <div className="flex gap-4">
           <UpdateUser userId={user.id} handleSaveChanges={onEdit} />
+          <AlertDialog>
+            <AlertDialogTrigger className="text-red11 border-collapse bg-red4 hover:bg-red5 focus:shadow-red7 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px] h-10 px-4 py-2">
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete 1 user and there teams from the servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setRowSelection({})}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(user.id)}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       );
     },
@@ -163,21 +178,115 @@ export function UpdateUser({ userId, handleSaveChanges }) {
   );
 }
 
-const DataTableDemo = () => {
-  const [loading, setLoading] = React.useState(true);
+const CreateUser = ({ fetchData }) => {
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  const createUserSchema = z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+    password: z.string("password must be at least 8 characters").min(8),
+  });
+
+  const createUser = async () => {
+    setLoading(true);
+
+    try {
+      const userInput = createUserSchema.parse({
+        name,
+        email,
+        password,
+      });
+
+      const response = await fetch("http://localhost:5000/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userInput),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create user");
+      }
+
+      setName("");
+      setEmail("");
+      setPassword("");
+      toast.success("User created successfully");
+      fetchData();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error("Validation error: " + error.errors.map((err) => err.message).join(", "));
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="blue" size="sm">
+          Create User
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create User</DialogTitle>
+          <DialogDescription>Fill in the required information below to create a new user. Click save when you&apos;re finished.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              Email
+            </Label>
+            <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              Password
+            </Label>
+            <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="col-span-3" type="password" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={createUser} isLoading={loading} disabled={!name || !email || !password}>
+            Create User
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const UserTable = () => {
   const [data, setData] = React.useState([]);
   const [sorting, setSorting] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
   const [showDeleteAllButton, setShowDeleteAllButton] = React.useState(false);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 7, // Set the default page size to 6
+    pageSize: 7,
   });
+
   const { token } = useAuth();
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("http://localhost:5000/user/all", {
@@ -199,7 +308,7 @@ const DataTableDemo = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [token]);
 
   React.useEffect(() => {
     fetchData();
@@ -238,7 +347,77 @@ const DataTableDemo = () => {
     [token]
   );
 
-  const columns = React.useMemo(() => getColumn({ onEdit: handleSaveChanges }), [handleSaveChanges]);
+  const handleDeleteAll = React.useCallback(
+    async (id) => {
+      let selectedIds;
+      if (!id) {
+        selectedIds = Object.keys(rowSelection).map((id) => data[id].id);
+
+        if (selectedIds.length === 0) {
+          return;
+        }
+      } else {
+        selectedIds = [id];
+      }
+
+      try {
+        setLoading(true);
+
+        // Promise to delete users
+        const promise = new Promise((resolve, reject) => {
+          fetch("http://localhost:5000/user", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
+            body: JSON.stringify({ ids: selectedIds }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                response.json().then((data) => {
+                  reject(data.error);
+                });
+              }
+              return response.json();
+            })
+            .then((data) => {
+              // Additional processing after deletion
+              resolve(data.msg); // Resolve with server response message
+            })
+            .catch(() => {
+              // console.log(error);
+              // reject(error);
+            });
+        });
+
+        // Display toast messages based on promise state
+        toast.promise(promise, {
+          loading: "Deleting the Selected Users...",
+          success: (message) => {
+            fetchData(); // Refresh data after successful deletion
+            setRowSelection({}); // Clear row selection
+            setShowDeleteAllButton(false); // Hide delete button
+            return <b>{message}</b>; // Use server response message as success toast
+          },
+          error: (error) => {
+            const errorMessage = error || "Error deleting users.";
+            return <b>{errorMessage}</b>;
+          },
+        });
+      } catch (error) {
+        console.error("Error deleting users:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [data, rowSelection, token, fetchData]
+  );
+
+  const columns = React.useMemo(
+    () => getColumn({ onEdit: handleSaveChanges, onDelete: handleDeleteAll, setRowSelection: setRowSelection }),
+    [handleDeleteAll, handleSaveChanges]
+  );
 
   const table = useReactTable({
     data,
@@ -263,65 +442,6 @@ const DataTableDemo = () => {
     },
   });
 
-  const handleDeleteAll = async () => {
-    const selectedIds = Object.keys(rowSelection).map((id) => data[id].id);
-
-    if (selectedIds.length === 0) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Promise to delete users
-      const promise = new Promise((resolve, reject) => {
-        fetch("http://localhost:5000/user", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-          body: JSON.stringify({ ids: selectedIds }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              response.json().then((data) => {
-                reject(data.error);
-              });
-            }
-            return response.json();
-          })
-          .then((data) => {
-            // Additional processing after deletion
-            resolve(data.msg); // Resolve with server response message
-          })
-          .catch(() => {
-            // console.log(error);
-            // reject(error);
-          });
-      });
-
-      // Display toast messages based on promise state
-      toast.promise(promise, {
-        loading: "Deleting the Selected Users...",
-        success: (message) => {
-          fetchData(); // Refresh data after successful deletion
-          setRowSelection({}); // Clear row selection
-          setShowDeleteAllButton(false); // Hide delete button
-          return <b>{message}</b>; // Use server response message as success toast
-        },
-        error: (error) => {
-          const errorMessage = error || "Error deleting users.";
-          return <b>{errorMessage}</b>;
-        },
-      });
-    } catch (error) {
-      console.error("Error deleting users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="w-full">
       <Toaster position="bottom-right" reverseOrder={false} />
@@ -333,6 +453,7 @@ const DataTableDemo = () => {
             onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
@@ -421,6 +542,8 @@ const DataTableDemo = () => {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+            <CreateUser fetchData={fetchData} />
+
             <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
               Previous
             </Button>
@@ -434,4 +557,4 @@ const DataTableDemo = () => {
   );
 };
 
-export default DataTableDemo;
+export default UserTable;

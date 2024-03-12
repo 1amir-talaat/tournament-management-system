@@ -14,7 +14,7 @@ const Event = sequelize.define(
       allowNull: false,
     },
     type: {
-      type: Sequelize.ENUM("Individual", "Team"),
+      type: Sequelize.ENUM("individual", "team"),
       allowNull: false,
     },
     eventType: {

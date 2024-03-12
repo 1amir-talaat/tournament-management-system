@@ -4,8 +4,9 @@ import { jwtDecode } from "jwt-decode";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(!!localStorage.getItem("token") && jwtDecode(localStorage.getItem("token")));
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [isLogin, setIsLogin] = useState(!!localStorage.getItem("token"));
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,8 +14,10 @@ const AuthProvider = ({ children }) => {
       if (token) {
         const decoded = jwtDecode(token);
         setUser(decoded);
+        setIsLogin(true);
       } else {
         setUser(null);
+        setIsLogin(false);
       }
     };
 
@@ -40,6 +43,7 @@ const AuthProvider = ({ children }) => {
 
       localStorage.setItem("token", data.token);
       setToken(data.token);
+      setIsLogin(true);
       return data;
     } catch (error) {
       setError(error.message);
@@ -79,6 +83,7 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setIsLogin(false);
   };
 
   const deleteUser = async (id, setError) => {
@@ -116,6 +121,7 @@ const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        isLogin,
         deleteUser,
         loading,
       }}
