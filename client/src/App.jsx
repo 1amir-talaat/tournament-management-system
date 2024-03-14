@@ -9,6 +9,7 @@ import useAuth from "./hook/useAuth";
 import Landing from "./components/Landing";
 import Layout from "./components/Layout";
 import ChoseEventsCount from "./components/ChoseEventsCount";
+import Events from "./components/Events";
 
 function App() {
   const { user, isLogin } = useAuth();
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" Component={Login} />
+          <Route path="/Events" Component={Events} />
           <Route path="*" Component={Error404} />
           <Route path="/chose-event-count" Component={ChoseEventsCount} />
           <Route path="/test" Component={ChoseEventsCount} />
