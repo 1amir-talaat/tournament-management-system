@@ -13,7 +13,6 @@ import {
   useDisclosure,
   Menu,
   MenuButton,
-  MenuDivider,
   MenuItem,
   MenuList,
 } from "@chakra-ui/react";
@@ -30,15 +29,21 @@ import AdminTable from "./Tables/AdminTable";
 import { IoMenu } from "react-icons/io5";
 import { FaAngleDown } from "react-icons/fa";
 
+import { MdOutlineEmojiEvents, MdOutlineLeaderboard } from "react-icons/md";
+import { useEffect, useState } from "react";
+
 const SidebarContent = ({ onClose, handleContentChange, userRole, ...rest }) => {
   const sidebarItems = [
     { name: "Users", icon: <FaRegUser size={21.5} /> },
     { name: "Admins", icon: <RiAdminLine size={21.5} /> },
+    { name: "Events", icon: <MdOutlineEmojiEvents size={21.5} /> },
+    { name: "Leaderboard", icon: <MdOutlineLeaderboard size={21.5} /> },
   ];
 
   const userRoleSpecificItems = {
     admin: ["Users"],
     superadmin: ["Users", "Admins"],
+    student: ["Events", "Leaderboard"],
   };
 
   const filteredItems = userRoleSpecificItems[userRole] || [];
@@ -147,42 +152,64 @@ const Dashbord = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showContetnt, setShowContent] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.role == "student" && user.maxEvents === null) {
+        navigate("/chose-event-count");
+      } else {
+        setShowContent(true);
+      }
+    }
+  }, [navigate, user]);
 
   const handleContentChange = (content) => {
     navigate(content);
     onClose();
   };
 
+  const userRoleSpecificItems = {
+    admin: ["Users"],
+    superadmin: ["Users", "Admins"],
+    student: ["Events", "Leaderboard"],
+  };
+
   let location = useLocation();
-  if (location.pathname === "/dashbord/" || location.pathname === "/dashbord") {
-    navigate("/dashbord/Users");
+  console.log(location.pathname);
+  if (location.pathname === "/dashboard/" || (location.pathname === "/dashboard" && user)) {
+    navigate(`/dashboard/${user && userRoleSpecificItems[user.role][0]}`);
   }
 
   return (
-    <Box minH="100vh" w={"100vw"} bg={useColorModeValue("white", "gray.900")}>
-      <SidebarContent
-        handleContentChange={handleContentChange}
-        userRole={user ? user.role : "student"}
-        onClose={() => onClose}
-        display={{ base: "none", md: "block" }}
-      />
-      <Drawer isOpen={isOpen} placement="left" onClose={onClose} returnFocusOnClose={false} onOverlayClick={onClose} size="full">
-        <DrawerContent>
-          <SidebarContent userRole={user ? user.role : "student"} handleContentChange={handleContentChange} onClose={onClose} />
-        </DrawerContent>
-      </Drawer>
-      {/* mobilenav */}
-      <MobileNav onOpen={onOpen} user={user} />
-      <Box ml={{ base: 0, md: 60 }} p="4">
-        <Routes>
-          <Route path="/Users" element={<UserTable />} />
-          <Route path="/Admins" element={<AdminTable />} />
-          <Route path="/explore" element={<div>Explore Content</div>} />
-          <Route path="/favourites" element={<div>Favourites Content</div>} />
-          <Route path="/settings" element={<div>Settings Content</div>} />
-        </Routes>
-      </Box>
-    </Box>
+    <>
+      {showContetnt && (
+        <Box minH="100vh" w={"100vw"} bg={useColorModeValue("white", "gray.900")}>
+          <SidebarContent
+            handleContentChange={handleContentChange}
+            userRole={user ? user.role : "student"}
+            onClose={() => onClose}
+            display={{ base: "none", md: "block" }}
+          />
+          <Drawer isOpen={isOpen} placement="left" onClose={onClose} returnFocusOnClose={false} onOverlayClick={onClose} size="full">
+            <DrawerContent>
+              <SidebarContent userRole={user ? user.role : "student"} handleContentChange={handleContentChange} onClose={onClose} />
+            </DrawerContent>
+          </Drawer>
+          {/* mobilenav */}
+          <MobileNav onOpen={onOpen} user={user} />
+          <Box ml={{ base: 0, md: 60 }} p="4">
+            <Routes>
+              <Route path="/Users" element={<UserTable />} />
+              <Route path="/Admins" element={<AdminTable />} />
+              <Route path="/explore" element={<div>Explore Content</div>} />
+              <Route path="/favourites" element={<div>Favourites Content</div>} />
+              <Route path="/settings" element={<div>Settings Content</div>} />
+            </Routes>
+          </Box>
+        </Box>
+      )}
+    </>
   );
 };
 

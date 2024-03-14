@@ -20,7 +20,6 @@ async function initializeDatabase() {
   }
 }
 
-
 initializeDatabase();
 
 dotenv.config();
@@ -32,4 +31,4 @@ app.use(express.json());
 
 app.use(router);
 
-app.listen(5000, () => console.log("Server running at port 5000"));
+app.listen(5002, () => console.log("Server running at port 5002"));

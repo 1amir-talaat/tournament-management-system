@@ -109,7 +109,7 @@ export function UpdateAdmin({ adminId, handleSaveChanges }) {
   const fetchadminData = async () => {
     try {
       setdataLoading(true);
-      const response = await fetch(`http://localhost:5000/admin/${adminId}`, {
+      const response = await fetch(`http://localhost:5002/admin/${adminId}`, {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -188,7 +188,7 @@ const AdminTable = () => {
   const fetchAdminData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/admin/all", {
+      const response = await fetch("http://localhost:5002/admin/all", {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -222,7 +222,7 @@ const AdminTable = () => {
     async (name, email, adminId, setLoading) => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/admin/${adminId}`, {
+        const response = await fetch(`http://localhost:5002/admin/${adminId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -264,7 +264,7 @@ const AdminTable = () => {
 
         // Promise to delete admins
         const promise = new Promise((resolve, reject) => {
-          fetch("http://localhost:5000/admin", {
+          fetch("http://localhost:5002/admin", {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

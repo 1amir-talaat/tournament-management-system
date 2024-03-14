@@ -22,16 +22,18 @@ const User = sequelize.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    type: {
-      type: Sequelize.ENUM("individual", "team"),
+    isTeam: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
-      defaultValue: "individual",
+      defaultValue: false,
+    },
+    maxEvents: {
+      type: Sequelize.INTEGER,
     },
   },
   {
     tableName: "User",
   }
 );
-
 
 export default User;

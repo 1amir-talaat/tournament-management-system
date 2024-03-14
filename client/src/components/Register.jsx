@@ -15,12 +15,14 @@ import {
   Spinner,
   AlertIcon,
   AlertTitle,
+  Checkbox,
 } from "@chakra-ui/react";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { AuthContext } from "../context/AuthContext";
+import useAuth from "../hook/useAuth";
 
 const nameSchema = z.string().nonempty("Name is required");
 const emailSchema = z.string().email("Invalid email address");
@@ -36,6 +38,15 @@ export default function Register() {
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState(null);
   const { register, loading } = useContext(AuthContext);
+  const { user, isLogin } = useAuth();
+  const cheakBoxRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [navigate, user]);
 
   const handleNameChange = (e) => {
     setName(e.target.value);
@@ -80,12 +91,17 @@ export default function Register() {
     }
 
     try {
-      await register(name, email, password, setError);
-      // Handle successful registration, such as redirecting to another page
+      console.log(cheakBoxRef.current.checked);
+      await register(name, email, password, cheakBoxRef.current.checked, setError);
     } catch (err) {
       console.error("Registration error:", err.message);
     }
   };
+
+  if (isLogin) {
+    return "";
+  }
+
   return (
     <Flex minH={"100vh"} minW={"100vw"} align={"center"} justify={"center"} bg={useColorModeValue("gray.50", "gray.800")}>
       <Stack spacing={10} mx={"auto"} minW={"500px"} maxW={"lg"} py={12} px={6}>
@@ -134,6 +150,7 @@ export default function Register() {
                 {passwordError}
               </Box>
             </FormControl>
+            <Checkbox ref={cheakBoxRef}>Register as Team</Checkbox>
             <Stack spacing={10} pt={2}>
               <Button colorScheme="blue" _focus={{ outline: "none" }} isLoading={loading} onClick={handleSubmit}>
                 {loading ? <Spinner /> : "Sign Up"}

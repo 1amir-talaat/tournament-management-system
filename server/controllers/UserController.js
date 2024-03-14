@@ -36,14 +36,14 @@ class UserController {
   };
 
   static register = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, isTeam } = req.body;
 
     if (!(name && email && password)) {
       return res.status(401).json({ error: "Missing input fields" });
     }
 
     try {
-      const newUser = await User.create({ name, email, password: await bcrypt.hash(password, 10)});
+      const newUser = await User.create({ name, email, password: await bcrypt.hash(password, 10), isTeam });
 
       const token = jwt.sign(
         {
@@ -51,6 +51,8 @@ class UserController {
           email: newUser.email,
           name: newUser.name,
           isAdmin: false,
+          isTeam: newUser.isTeam,
+          maxEvents: newUser.maxEvents,
           role: "student",
         },
         process.env.JWT_SECRET_KEY,
@@ -112,6 +114,8 @@ class UserController {
           name: user.name,
           isAdmin,
           role,
+          isTeam: user.isTeam,
+          maxEvents: user.maxEvents,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -298,6 +302,66 @@ class UserController {
       res.json(admin);
     } catch (error) {
       console.error("Error fetching admin:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static changeMaxEvents = async (req, res) => {
+    const { id, maxEvents } = req.body;
+
+    try {
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      user.maxEvents = maxEvents;
+
+      await user.save();
+
+      res.status(200).json({ message: "student data updated successfully" });
+    } catch (error) {
+      console.error("Error updating max events:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static refreshUserToken = async (req, res) => {
+    const token = req.headers.authorization;
+
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const { id, email, name, isAdmin, role, isTeam, maxEvents } = decoded;
+
+      const updatedUser = await User.findByPk(id);
+
+      const newToken = jwt.sign(
+        {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          isAdmin,
+          role,
+          isTeam: updatedUser.isTeam,
+          maxEvents: updatedUser.maxEvents,
+        },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: "30d",
+        }
+      );
+
+      res.status(200).json({
+        token: newToken,
+        msg: "Token refreshed successfully",
+      });
+    } catch (error) {
+      console.error("Error refreshing token:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };

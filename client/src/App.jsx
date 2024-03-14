@@ -7,6 +7,8 @@ import Error404 from "./components/Error404";
 import "./globals.css";
 import useAuth from "./hook/useAuth";
 import Landing from "./components/Landing";
+import Layout from "./components/Layout";
+import ChoseEventsCount from "./components/ChoseEventsCount";
 
 function App() {
   const { user, isLogin } = useAuth();
@@ -15,11 +17,15 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" Component={Landing} />
           <Route path="/login" Component={Login} />
           <Route path="*" Component={Error404} />
+          <Route path="/chose-event-count" Component={ChoseEventsCount} />
+          <Route path="/test" Component={ChoseEventsCount} />
           <Route path="/register" Component={Register} />
-          <Route path="/dashbord/*" element={isLogin && !user ? "" : user && user.isAdmin ? <Dashbord /> : <Navigate to="/login" replace />} />
+          <Route path="/dashboard/*" element={isLogin ? <Dashbord /> : <Navigate to="/login" replace />} />
+          <Route path="/" Component={Layout}>
+            <Route index Component={Landing} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </>

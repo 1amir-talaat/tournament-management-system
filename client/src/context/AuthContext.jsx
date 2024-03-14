@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(!!localStorage.getItem("token") && jwtDecode(localStorage.getItem("token")));
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLogin, setIsLogin] = useState(!!localStorage.getItem("token"));
   const [loading, setLoading] = useState(false);
@@ -24,11 +24,36 @@ const AuthProvider = ({ children }) => {
     fetchUserFromToken();
   }, [token]);
 
+
+  const refreshToken = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:5002/refresh-token", {
+        method: "GET",
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+    } catch (error) {
+      throw new Error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (email, password, setError) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://localhost:5000/user/login", {
+      const response = await fetch("http://localhost:5002/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,16 +77,16 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password, setError) => {
+  const register = async (name, email, password, isTeam, setError) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://localhost:5000/user/register", {
+      const response = await fetch("http://localhost:5002/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, isTeam }),
       });
 
       const data = await response.json();
@@ -124,6 +149,7 @@ const AuthProvider = ({ children }) => {
         isLogin,
         deleteUser,
         loading,
+        refreshToken,
       }}
     >
       {children}

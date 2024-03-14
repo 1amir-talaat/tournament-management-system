@@ -117,7 +117,7 @@ export function UpdateUser({ userId, handleSaveChanges }) {
   const fetchUserData = async () => {
     try {
       setdataLoading(true);
-      const response = await fetch(`http://localhost:5000/user/${userId}`, {
+      const response = await fetch(`http://localhost:5002/user/${userId}`, {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -200,7 +200,7 @@ const CreateUser = ({ fetchData }) => {
         password,
       });
 
-      const response = await fetch("http://localhost:5000/user/register", {
+      const response = await fetch("http://localhost:5002/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -289,7 +289,7 @@ const UserTable = () => {
   const fetchData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/user/all", {
+      const response = await fetch("http://localhost:5002/user/all", {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -323,7 +323,7 @@ const UserTable = () => {
     async (name, email, userId, setLoading) => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/user/${userId}`, {
+        const response = await fetch(`http://localhost:5002/user/edit/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -365,7 +365,7 @@ const UserTable = () => {
 
         // Promise to delete users
         const promise = new Promise((resolve, reject) => {
-          fetch("http://localhost:5000/user", {
+          fetch("http://localhost:5002/user", {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

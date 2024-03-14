@@ -34,15 +34,9 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      if (user.isAdmin) {
-        navigate("/dashbord");
-      } else {
-        navigate("/");
-      }
+      navigate("/dashboard");
     }
   }, [navigate, user]);
-
-
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
