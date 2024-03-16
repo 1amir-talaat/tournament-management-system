@@ -14,6 +14,7 @@ const AuthProvider = ({ children }) => {
       if (token) {
         const decoded = jwtDecode(token);
         setUser(decoded);
+        console.log(decoded, token)
         setIsLogin(true);
       } else {
         setUser(null);

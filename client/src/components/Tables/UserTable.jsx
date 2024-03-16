@@ -183,6 +183,7 @@ const CreateUser = ({ fetchData }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const createUserSchema = z.object({
     name: z.string().min(1),
@@ -218,6 +219,7 @@ const CreateUser = ({ fetchData }) => {
       setPassword("");
       toast.success("User created successfully");
       fetchData();
+      setIsOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error("Validation error: " + error.errors.map((err) => err.message).join(", "));
@@ -230,8 +232,14 @@ const CreateUser = ({ fetchData }) => {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog
+      open={isOpen}
+      onOpenChange={() => {
+        fetchData();
+        setIsOpen(!isOpen);
+      }}
+    >
+      <DialogTrigger onClick={() => setIsOpen(!isOpen)} asChild>
         <Button variant="blue" size="sm">
           Create User
         </Button>
@@ -263,7 +271,7 @@ const CreateUser = ({ fetchData }) => {
         </div>
         <DialogFooter>
           <Button onClick={createUser} isLoading={loading} disabled={!name || !email || !password}>
-            Create User
+            {loading ? <Spinner /> : "Create User"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -281,7 +289,7 @@ const UserTable = () => {
   const [showDeleteAllButton, setShowDeleteAllButton] = React.useState(false);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 7,
+    pageSize: 6,
   });
 
   const { token } = useAuth();
@@ -429,7 +437,7 @@ const UserTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination, 
+    onPaginationChange: setPagination,
     onRowSelectionChange: (selectedRowIds) => {
       setRowSelection(selectedRowIds);
     },

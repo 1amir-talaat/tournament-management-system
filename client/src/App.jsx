@@ -22,7 +22,6 @@ function App() {
           <Route path="/Events" Component={Events} />
           <Route path="*" Component={Error404} />
           <Route path="/chose-event-count" Component={ChoseEventsCount} />
-          <Route path="/test" Component={ChoseEventsCount} />
           <Route path="/register" Component={Register} />
           <Route path="/dashboard/*" element={isLogin ? <Dashbord /> : <Navigate to="/login" replace />} />
           <Route path="/" Component={Layout}>

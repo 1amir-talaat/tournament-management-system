@@ -51,10 +51,10 @@ class UserController {
           email: newUser.email,
           name: newUser.name,
           isAdmin: false,
-          isTeam: newUser.isTeam,
-          maxEvents: newUser.maxEvents,
-          points: newUser.points,
           role: "student",
+          points: newUser.points,
+          isTeam: newUser.isTeam,
+          maxEvents: null,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -370,14 +370,10 @@ class UserController {
   };
 
   static getTopUsers = async (req, res) => {
-    if (!req.isAdmin) {
-      return res.status(403).json({ error: "Unauthorized - Admin access required" });
-    }
-
     try {
       const users = await User.findAll({
-        attributes: { exclude: ["password"] },
-        order: [["points", "DESC"]], // Sorting users by points in descending order
+        attributes: { exclude: ["password", "email"] },
+        order: [["points", "DESC"]],
       });
       res.json(users);
     } catch (error) {

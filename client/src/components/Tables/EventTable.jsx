@@ -2,9 +2,9 @@
 import * as React from "react";
 import { formatDistanceToNow } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
-
+import { Step, StepIcon, StepIndicator, StepNumber, StepSeparator, StepStatus, StepTitle, Stepper, useSteps, Box } from "@chakra-ui/react";
 import useAuth from "../../hook/useAuth.jsx";
-
+import { Text, Badge, FormControl } from "@chakra-ui/react";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 
 import { ArrowUpDown, ChevronDown } from "lucide-react";
@@ -21,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+import { z } from "zod";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +34,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
   {
@@ -48,16 +52,14 @@ const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
     enableHiding: false,
   },
   {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    accessorKey: "id",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        id
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="lowercase text-center">{row.getValue("id")}</div>,
   },
   {
     accessorKey: "name",
@@ -65,9 +67,19 @@ const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "inTeam",
-    header: () => <div>In Team</div>,
-    cell: ({ row }) => <div style={{ width: "20px" }}>{row.getValue("inTeam") ? "Yes" : "No"}</div>,
+    accessorKey: "eventType",
+    header: () => <div>Event Type</div>,
+    cell: ({ row }) => <div>{row.getValue("eventType")}</div>,
+  },
+  {
+    accessorKey: "type",
+    header: () => <div>type</div>,
+    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+  },
+  {
+    accessorKey: "numParticipations",
+    header: () => <div>Num Participations</div>,
+    cell: ({ row }) => <div className="text-center">{row.getValue("numParticipations")}</div>,
   },
   {
     id: "createdAt",
@@ -95,7 +107,7 @@ const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete 1 user and there teams from the servers.
+                  This action cannot be undone. This will permanently delete 1 user and their teams from the servers.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -112,7 +124,8 @@ const getColumn = ({ onEdit, onDelete, setRowSelection }) => [
 
 export function UpdateUser({ userId, handleSaveChanges }) {
   const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
+  const [eventType, setEventType] = React.useState("");
+  const [type, setType] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [dataLoading, setdataLoading] = React.useState(false);
   const { token } = useAuth();
@@ -120,7 +133,7 @@ export function UpdateUser({ userId, handleSaveChanges }) {
   const fetchUserData = async () => {
     try {
       setdataLoading(true);
-      const response = await fetch(`http://localhost:5002/user/${userId}`, {
+      const response = await fetch(`http://localhost:5002/event/${userId}`, {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -129,11 +142,12 @@ export function UpdateUser({ userId, handleSaveChanges }) {
 
       const userData = await response.json();
       setName(userData.name);
-      setEmail(userData.email);
+      setType(userData.type);
+      setEventType(userData.eventType);
       setdataLoading(false);
     } catch (error) {
       setdataLoading(false);
-      toast.error("Error fetching user data");
+      toast.error("Error fetching Event data");
     }
   };
 
@@ -144,8 +158,8 @@ export function UpdateUser({ userId, handleSaveChanges }) {
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Edit User</SheetTitle>
-          <SheetDescription>Make changes to this user. Click save when you&apos;re done.</SheetDescription>
+          <SheetTitle>Edit Event</SheetTitle>
+          <SheetDescription>Make changes to this Event. Click save when you&apos;re done.</SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -160,18 +174,32 @@ export function UpdateUser({ userId, handleSaveChanges }) {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">
-              Email
+              Event Type
             </Label>
             {dataLoading ? (
               <Skeleton className="h-10 w-[250px]" />
             ) : (
-              <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+              <Input id="email" value={eventType} onChange={(e) => setEventType(e.target.value)} className="col-span-3" />
             )}
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              type
+            </Label>
+            <Select onValueChange={(value) => setType(value)} value={type}>
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Individual">Individual</SelectItem>
+                <SelectItem value="Team">Team</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button variant="blue" onClick={() => handleSaveChanges(name, email, userId, setLoading)} disabled={loading || dataLoading}>
+            <Button variant="blue" onClick={() => handleSaveChanges(name, type, eventType, userId, setLoading)} disabled={loading || dataLoading}>
               {loading ? <Spinner /> : "Save changes"}
             </Button>
           </SheetClose>
@@ -181,85 +209,187 @@ export function UpdateUser({ userId, handleSaveChanges }) {
   );
 }
 
-const CreateUser = () => {
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+const eventSchema = z.object({
+  eventName: z.string().nonempty("Event Name is required"),
+  eventType: z.string().nonempty("Event Type is required"),
+  eventTypeName: z.string().nonempty("Event Type Name is required"),
+});
+
+function CreateEvent() {
+  const [eventName, setEventName] = React.useState("");
+  const [eventType, setEventType] = React.useState("");
+  const [eventTypeName, setEventTypeName] = React.useState("");
+  const [questions, setQuestions] = React.useState([{ question: "", answer: "" }]);
+  const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
 
-  const createUser = async () => {
-    setLoading(true);
+  const {token} = useAuth();
 
+  const handleInputChange = (index, event) => {
+    const { name, value } = event.target;
+    const list = [...questions];
+    list[index][name] = value;
+    setQuestions(list);
+  };
+
+  const handleAddQuestion = () => {
+    if (questions.length < 5) {
+      setQuestions([...questions, { question: "", answer: "" }]);
+    } else {
+      toast.error("You can only add up to 5 questions.");
+    }
+  };
+
+  const handleSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:5002/register", {
+      // Validate the form data
+      eventSchema.parse({ eventName, eventType, eventTypeName });
+
+      setLoading(true);
+      // Send event data to the server
+      // Example:
+      const response = await fetch("http://localhost:5002/event/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify({
-          name,
-          email,
-          password,
+          eventName,
+          type: eventType,
+          eventType: eventTypeName,
+          questions: questions.map(({ question }) => question.question),
+          answers: questions.map(({ question }) => question.answer),
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create user");
+        toast.error(data.error);
+        setLoading(false);
+        return;
       }
 
-      setName("");
-      setEmail("");
-      setPassword("");
-      toast.success("User created successfully");
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
       setLoading(false);
+      toast.success("Event created successfully");
+    } catch (error) {
+      // If validation fails, display error message
+      toast.error(error.message);
     }
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="blue" size="sm">
-          Create User
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
-          <DialogDescription>Fill in the required information below to create a new user. Click save when you&apos;re finished.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              Password
-            </Label>
-            <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="col-span-3" type="password" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={createUser} isLoading={loading} disabled={!name || !email || !password}>
-            Create User
+    <>
+      <Toaster position="bottom-right" reverseOrder={false} />
+      <Dialog
+        onOpenChange={() => {
+          setEventName("");
+          setEventType("");
+          setEventTypeName("");
+          setActiveStep(0)
+          setQuestions([{ question: "", answer: "" }]);
+        }}
+        aria-label="Create Event"
+      >
+        <DialogTrigger asChild>
+          <Button variant="blue" size="sm">
+            Create Event
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>{" "}
+        <DialogContent className="max-w-[93%]">
+          <Stepper size="lg" index={activeStep}>
+            <Step>
+              <StepIndicator>
+                <StepStatus complete={<StepNumber>1</StepNumber>} active={<StepNumber>1</StepNumber>} />
+              </StepIndicator>
+              <StepTitle>Event Details</StepTitle>
+              <StepSeparator />
+            </Step>
+            <Step>
+              <StepIndicator>
+                <StepStatus complete={<StepNumber>2</StepNumber>} active={<StepNumber>2</StepNumber>} />
+              </StepIndicator>
+              <StepTitle>Questions & Answers</StepTitle>
+            </Step>
+          </Stepper>
+          {activeStep === 0 && (
+            <>
+              <div className="flex gap-3 mb-4 items-center">
+                <Label htmlFor="eventName" className="text-right w-[150px]">
+                  Event Name
+                </Label>
+                <FormControl id="eventName">
+                  <Input type="text" value={eventName} onChange={(e) => setEventName(e.target.value)} />
+                </FormControl>
+              </div>
+              <div className="flex gap-3 mb-4 items-center">
+                <Label htmlFor="eventType" className="text-right w-[150px]">
+                  Event Type
+                </Label>
+                <FormControl id="eventType">
+                  <Input type="text" value={eventType} onChange={(e) => setEventType(e.target.value)} />
+                </FormControl>
+              </div>
+              <div className="flex gap-3 mb-4 items-center">
+                <Label htmlFor="eventTypeName" className="text-right w-[150px]">
+                  Event Type Name
+                </Label>
+                <FormControl id="eventTypeName">
+                  <Select onValueChange={(value) => setEventTypeName(value)} value={eventTypeName}>
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue placeholder="type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Individual">Individual</SelectItem>
+                      <SelectItem value="Team">Team</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </div>
+              <DialogFooter>
+                <Button variant="blue" onClick={() => setActiveStep(1)}>
+                  Next
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+          {activeStep === 1 && (
+            <>
+              {questions.map((question, index) => (
+                <div key={index} className="flex gap-3 mb-4 items-center">
+                  <Label htmlFor={`question-${index}`} className="text-right w-[170px]">
+                    Question {index + 1}
+                  </Label>
+                  <FormControl id={`question-${index}`}>
+                    <Input type="text" name="question" value={question.question} onChange={(e) => handleInputChange(index, e)} />
+                  </FormControl>
+                  <Label htmlFor={`answer-${index}`} className="text-right w-[170px]">
+                    Answer {index + 1}
+                  </Label>
+                  <FormControl id={`answer-${index}`}>
+                    <Input type="text" name="answer" value={question.answer} onChange={(e) => handleInputChange(index, e)} />
+                  </FormControl>
+                </div>
+              ))}
+              {questions.length < 5 && (
+                <div className="flex justify-end">
+                  <Button variant="default" onClick={handleAddQuestion}>
+                    Add Question
+                  </Button>
+                </div>
+              )}
+              <DialogFooter>
+                <Button variant="blue" onClick={handleSubmit}>
+                  {loading ? <Spinner decorative={false} /> : "Submit"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
-};
+}
 
 const UserTable = () => {
   const [data, setData] = React.useState([]);
@@ -271,7 +401,7 @@ const UserTable = () => {
   const [showDeleteAllButton, setShowDeleteAllButton] = React.useState(false);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 7,
+    pageSize: 6,
   });
 
   const { token } = useAuth();
@@ -279,7 +409,7 @@ const UserTable = () => {
   const fetchData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5002/user/all", {
+      const response = await fetch("http://localhost:5002/events/admin", {
         method: "GET",
         headers: {
           Authorization: `${token}`,
@@ -310,25 +440,25 @@ const UserTable = () => {
   }, [rowSelection]);
 
   const handleSaveChanges = React.useCallback(
-    async (name, email, userId, setLoading) => {
+    async (name, type, eventType, userId, setLoading) => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5002/user/${userId}`, {
+        const response = await fetch(`http://localhost:5002/event/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `${token}`,
           },
-          body: JSON.stringify({ name, email }),
+          body: JSON.stringify({ eventName: name, type, eventType }),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to update user");
+          throw new Error("Failed to update Event");
         }
         fetchData();
-        toast.success("User updated successfully");
+        toast.success("Event updated successfully");
       } catch (error) {
-        toast.error("Error updating user: " + (error.message || "An error occurred"));
+        toast.error("Error updating Event: " + (error.message || "An error occurred"));
       } finally {
         setLoading(false);
       }
@@ -355,7 +485,7 @@ const UserTable = () => {
 
         // Promise to delete users
         const promise = new Promise((resolve, reject) => {
-          fetch("http://localhost:5002/user", {
+          fetch("http://localhost:5002/events", {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -383,7 +513,7 @@ const UserTable = () => {
 
         // Display toast messages based on promise state
         toast.promise(promise, {
-          loading: "Deleting the Selected Users...",
+          loading: "Deleting the Selected Event...",
           success: (message) => {
             fetchData(); // Refresh data after successful deletion
             setRowSelection({}); // Clear row selection
@@ -391,12 +521,12 @@ const UserTable = () => {
             return <b>{message}</b>; // Use server response message as success toast
           },
           error: (error) => {
-            const errorMessage = error || "Error deleting users.";
+            const errorMessage = error || "Error deleting Event.";
             return <b>{errorMessage}</b>;
           },
         });
       } catch (error) {
-        console.error("Error deleting users:", error);
+        console.error("Error deleting Event:", error);
       } finally {
         setLoading(false);
       }
@@ -419,7 +549,7 @@ const UserTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination, // Update the pagination state
+    onPaginationChange: setPagination,
     onRowSelectionChange: (selectedRowIds) => {
       setRowSelection(selectedRowIds);
     },
@@ -438,9 +568,9 @@ const UserTable = () => {
       <div>
         <div className="flex items-center py-4">
           <Input
-            placeholder="Filter emails..."
-            value={table.getColumn("email")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+            placeholder="Filter ID..."
+            value={table.getColumn("id")?.getFilterValue() ?? ""}
+            onChange={(event) => table.getColumn("id")?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
 
@@ -532,7 +662,7 @@ const UserTable = () => {
                 </AlertDialogContent>
               </AlertDialog>
             )}
-            <CreateUser />
+            <CreateEvent />
 
             <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
               Previous

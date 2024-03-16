@@ -22,9 +22,11 @@ export default function WithAction() {
               <>
                 <HStack spacing={{ base: "0", md: "6" }} px={4}>
                   <Flex alignItems={"center"} gap={4}>
-                    <Badge fontSize="0.9em" p="1" px={2} height={"fit-content"} ml="1" colorScheme="green">
-                      {user && user.points} point
-                    </Badge>
+                    {user && user.role == "student" && (
+                      <Badge fontSize="0.9em" p="1" px={2} height={"fit-content"} ml="1" colorScheme="green">
+                        {user && user.points} point
+                      </Badge>
+                    )}
                     <Menu>
                       <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
                         <HStack>

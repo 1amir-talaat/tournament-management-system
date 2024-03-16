@@ -19,6 +19,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+import { z } from "zod";
 
 import {
   AlertDialog,
@@ -169,6 +172,109 @@ export function UpdateAdmin({ adminId, handleSaveChanges }) {
     </Sheet>
   );
 }
+
+const CreateAdmin = ({ fetchData }) => {
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const { token } = useAuth();
+
+  const createUserSchema = z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+    password: z.string("password must be at least 8 characters").min(8),
+  });
+
+  const createAdmin = async () => {
+    setLoading(true);
+
+    try {
+      const userInput = createUserSchema.parse({
+        name,
+        email,
+        password,
+      });
+
+      const response = await fetch("http://localhost:5002/admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify(userInput),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create Admin");
+      }
+
+      setName("");
+      setEmail("");
+      setPassword("");
+      toast.success("Admin created successfully");
+      fetchData();
+      setIsOpen(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error("Validation error: " + error.errors.map((err) => err.message).join(", "));
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={() => {
+        fetchData();
+        setIsOpen(!isOpen);
+      }}
+    >
+      <DialogTrigger onClick={() => setIsOpen(!isOpen)} asChild>
+        <Button variant="blue" size="sm">
+          Create Admin
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Admin</DialogTitle>
+          <DialogDescription>Fill in the required information below to create a new Admin. Click save when you&apos;re finished.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              Email
+            </Label>
+            <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              Password
+            </Label>
+            <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="col-span-3" type="password" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={createAdmin} isLoading={loading} disabled={!name || !email || !password}>
+            {loading ? <Spinner /> : "Create Admin"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const AdminTable = () => {
   const [data, setData] = React.useState([]);
@@ -440,6 +546,8 @@ const AdminTable = () => {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+            <CreateAdmin fetchData={fetchAdminData} />
+
             <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
               Previous
             </Button>

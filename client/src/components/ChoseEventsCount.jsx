@@ -113,9 +113,6 @@ export default function ChoseEventsCount() {
           <Button colorScheme="blue" isLoading={loading} _focus={{ outline: "none" }} onClick={handleSubmit}>
             {loading ? <Spinner /> : "Next"}
           </Button>
-          {/* <Button className="text-lg" size={"lg"} onClick={handleSubmit} variant="blue">
-        Next
-      </Button> */}
         </div>
       )}
     </>

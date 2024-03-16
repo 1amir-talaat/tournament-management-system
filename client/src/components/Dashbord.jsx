@@ -33,18 +33,21 @@ import { FaAngleDown } from "react-icons/fa";
 import { MdOutlineEmojiEvents, MdOutlineLeaderboard } from "react-icons/md";
 import { useEffect, useState } from "react";
 import Events from "./Events";
+import Leaderboard from "./Leaderboard";
+import EventTable from "./Tables/EventTable";
 
 const SidebarContent = ({ onClose, handleContentChange, userRole, ...rest }) => {
   const sidebarItems = [
     { name: "Users", icon: <FaRegUser size={21.5} /> },
     { name: "Admins", icon: <RiAdminLine size={21.5} /> },
     { name: "Events", icon: <MdOutlineEmojiEvents size={21.5} /> },
+    { name: "Events ", icon: <MdOutlineEmojiEvents size={21.5} /> },
     { name: "Leaderboard", icon: <MdOutlineLeaderboard size={21.5} /> },
   ];
 
   const userRoleSpecificItems = {
-    admin: ["Users"],
-    superadmin: ["Users", "Admins"],
+    admin: ["Users", "Events "],
+    superadmin: ["Users", "Admins", "Events "],
     student: ["Events", "Leaderboard"],
   };
 
@@ -125,9 +128,11 @@ const MobileNav = ({ onOpen, user, ...rest }) => {
 
       <HStack spacing={{ base: "0", md: "6" }} px={4}>
         <Flex alignItems={"center"} gap={4}>
-          <Badge fontSize="0.9em" p="1" px={2} height={"fit-content"} ml="1" colorScheme="green">
-            {user && user.points} point
-          </Badge>
+          {user && user.role == "student" && (
+            <Badge fontSize="0.9em" p="1" px={2} height={"fit-content"} ml="1" colorScheme="green">
+              {user && user.points} point
+            </Badge>
+          )}
           <Menu>
             <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
               <HStack>
@@ -170,7 +175,11 @@ const Dashbord = () => {
   }, [navigate, user]);
 
   const handleContentChange = (content) => {
-    navigate(content);
+    if (content === "Events ") {
+      navigate("/dashboard/Admin-Events");
+    } else {
+      navigate(content);
+    }
     onClose();
   };
 
@@ -208,6 +217,8 @@ const Dashbord = () => {
               <Route path="/Users" element={<UserTable />} />
               <Route path="/Admins" element={<AdminTable />} />
               <Route path="/Events" element={<Events />} />
+              <Route path="/Leaderboard" element={<Leaderboard />} />
+              <Route path="/Admin-Events" element={<EventTable />} />
             </Routes>
           </Box>
         </Box>
