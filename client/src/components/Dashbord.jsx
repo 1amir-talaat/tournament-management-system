@@ -15,6 +15,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Badge,
 } from "@chakra-ui/react";
 import { IoPersonCircleSharp } from "react-icons/io5";
 import useAuth from "../hook/useAuth";
@@ -31,6 +32,7 @@ import { FaAngleDown } from "react-icons/fa";
 
 import { MdOutlineEmojiEvents, MdOutlineLeaderboard } from "react-icons/md";
 import { useEffect, useState } from "react";
+import Events from "./Events";
 
 const SidebarContent = ({ onClose, handleContentChange, userRole, ...rest }) => {
   const sidebarItems = [
@@ -121,8 +123,11 @@ const MobileNav = ({ onOpen, user, ...rest }) => {
         Torment
       </Text>
 
-      <HStack spacing={{ base: "0", md: "6" }}>
-        <Flex alignItems={"center"}>
+      <HStack spacing={{ base: "0", md: "6" }} px={4}>
+        <Flex alignItems={"center"} gap={4}>
+          <Badge fontSize="0.9em" p="1" px={2} height={"fit-content"} ml="1" colorScheme="green">
+            {user && user.points} point
+          </Badge>
           <Menu>
             <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
               <HStack>
@@ -202,9 +207,7 @@ const Dashbord = () => {
             <Routes>
               <Route path="/Users" element={<UserTable />} />
               <Route path="/Admins" element={<AdminTable />} />
-              <Route path="/explore" element={<div>Explore Content</div>} />
-              <Route path="/favourites" element={<div>Favourites Content</div>} />
-              <Route path="/settings" element={<div>Settings Content</div>} />
+              <Route path="/Events" element={<Events />} />
             </Routes>
           </Box>
         </Box>

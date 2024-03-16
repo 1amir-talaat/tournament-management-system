@@ -429,7 +429,7 @@ const UserTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination, // Update the pagination state
+    onPaginationChange: setPagination, 
     onRowSelectionChange: (selectedRowIds) => {
       setRowSelection(selectedRowIds);
     },

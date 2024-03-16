@@ -7,7 +7,7 @@ import useAuth from "../../hook/useAuth.jsx";
 
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { Input, Spinner } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";

@@ -30,6 +30,10 @@ const User = sequelize.define(
     maxEvents: {
       type: Sequelize.INTEGER,
     },
+    points: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "User",

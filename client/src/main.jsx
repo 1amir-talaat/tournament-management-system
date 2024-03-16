@@ -3,6 +3,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import * as ReactDOM from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
+import "./index.css"
 
 const rootElement = document.getElementById("root");
 ReactDOM.createRoot(rootElement).render(

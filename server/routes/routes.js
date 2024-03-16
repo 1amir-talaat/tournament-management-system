@@ -3,11 +3,13 @@ import UserController from "../controllers/UserController.js";
 import verifyToken from "../middleware/verifyToken.js";
 import ParticipationController from "../controllers/participationController.js";
 import EventController from "../controllers/EventController.js";
+import checkEventParticipation from "../middleware/checkEventParticipation.js";
 
 const router = express.Router();
 
 // User routes
 router.get("/user/all", verifyToken, UserController.getAllUsers);
+router.get("/user/top", verifyToken, UserController.getTopUsers);
 router.get("/user/:id", verifyToken, UserController.getUserById);
 router.post("/user/register", UserController.register);
 router.post("/user/login", UserController.login);
@@ -24,6 +26,7 @@ router.delete("/admin", verifyToken, UserController.deleteAdmins);
 router.get("/admin/:id", verifyToken, UserController.getAdminById);
 
 // Participation routes
+<<<<<<< HEAD
 router.post("/participation/register", verifyToken, ParticipationController.participateInEvent);
 router.get("/participation/:eventId/participants", verifyToken, ParticipationController.getEventParticipants);
 router.get("/participation/count", verifyToken, ParticipationController.getUserEventCount);
@@ -32,4 +35,12 @@ router.get("/participation/count", verifyToken, ParticipationController.getUserE
 router.post("/event/create", verifyToken, EventController.createEvent);
 router.get("/event/all", EventController.getAllEvents);
 
+=======
+router.post("/participation/register", verifyToken, checkEventParticipation, ParticipationController.participateInEvent);
+router.get("/participation/:eventId/participants", verifyToken, ParticipationController.getEventParticipants);
+
+// Event routes
+router.post("/event/create", verifyToken, EventController.createEvent);
+router.get("/event/all", verifyToken, EventController.getAllEvents);
+>>>>>>> 53f33c7 (.)
 export default router;

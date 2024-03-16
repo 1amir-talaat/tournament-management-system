@@ -53,6 +53,7 @@ class UserController {
           isAdmin: false,
           isTeam: newUser.isTeam,
           maxEvents: newUser.maxEvents,
+          points: newUser.points,
           role: "student",
         },
         process.env.JWT_SECRET_KEY,
@@ -114,6 +115,7 @@ class UserController {
           name: user.name,
           isAdmin,
           role,
+          points: user.points,
           isTeam: user.isTeam,
           maxEvents: user.maxEvents,
         },
@@ -347,6 +349,7 @@ class UserController {
           name: updatedUser.name,
           isAdmin,
           role,
+          points: updatedUser.points,
           isTeam: updatedUser.isTeam,
           maxEvents: updatedUser.maxEvents,
         },
@@ -362,6 +365,23 @@ class UserController {
       });
     } catch (error) {
       console.error("Error refreshing token:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  static getTopUsers = async (req, res) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ error: "Unauthorized - Admin access required" });
+    }
+
+    try {
+      const users = await User.findAll({
+        attributes: { exclude: ["password"] },
+        order: [["points", "DESC"]], // Sorting users by points in descending order
+      });
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };

@@ -19,11 +19,11 @@ const Questions = sequelize.define(
       },
     },
     text: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: false,
     },
     answer: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: false,
     },
   },
