@@ -15,20 +15,6 @@ export default function WithAction() {
       <Box bg={useColorModeValue("gray.100", "gray.900")} px={"7vw"}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
           <HStack spacing={8} alignItems={"center"}>
-<<<<<<< HEAD
-            <Box fontSize={"2xl"}>Torment</Box>
-          </HStack>
-          <Flex alignItems={"center"}>
-            {isLogin ? (
-              <Menu>
-                <MenuButton as={Button} rounded={"full"} variant={"link"} cursor={"pointer"} minW={0}>
-                  <BiSolidUserCircle size={40} />
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => logout()}>Sign out</MenuItem>
-                </MenuList>
-              </Menu>
-=======
             <Box fontSize={"2xl"}>Tournament</Box>
           </HStack>
           <Flex alignItems={"center"}>
@@ -61,7 +47,6 @@ export default function WithAction() {
                   </Flex>
                 </HStack>
               </>
->>>>>>> 53f33c7 (.)
             ) : (
               <Stack flex={{ base: 1, md: 0 }} justify={"flex-end"} direction={"row"} spacing={4}>
                 <Button variant="link" style={{ fontSize: "18px" }}>
