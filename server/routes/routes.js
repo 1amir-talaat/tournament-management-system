@@ -26,21 +26,10 @@ router.delete("/admin", verifyToken, UserController.deleteAdmins);
 router.get("/admin/:id", verifyToken, UserController.getAdminById);
 
 // Participation routes
-<<<<<<< HEAD
-router.post("/participation/register", verifyToken, ParticipationController.participateInEvent);
-router.get("/participation/:eventId/participants", verifyToken, ParticipationController.getEventParticipants);
-router.get("/participation/count", verifyToken, ParticipationController.getUserEventCount);
-
-// Event routes
-router.post("/event/create", verifyToken, EventController.createEvent);
-router.get("/event/all", EventController.getAllEvents);
-
-=======
 router.post("/participation/register", verifyToken, checkEventParticipation, ParticipationController.participateInEvent);
 router.get("/participation/:eventId/participants", verifyToken, ParticipationController.getEventParticipants);
 
 // Event routes
 router.post("/event/create", verifyToken, EventController.createEvent);
 router.get("/event/all", verifyToken, EventController.getAllEvents);
->>>>>>> 53f33c7 (.)
 export default router;
